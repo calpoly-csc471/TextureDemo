@@ -124,6 +124,7 @@ public:
 		prog->addUniform("P");
 		prog->addUniform("MV");
 		prog->addUniform("uWindowSize");
+		prog->addUniform("uTime");
 		prog->addAttribute("vertPos");
 	}
 
@@ -167,6 +168,7 @@ public:
 		glUniformMatrix4fv(prog->getUniform("MV"), 1, GL_FALSE, glm::value_ptr(MV->topMatrix()));
 
 		glUniform2f(prog->getUniform("uWindowSize"), (float) width, (float) height);
+		glUniform1f(prog->getUniform("uTime"), (float) glfwGetTime());
 
 		glBindVertexArray(VertexArrayID);
 
