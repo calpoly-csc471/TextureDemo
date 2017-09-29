@@ -30,6 +30,7 @@ public:
 
 	// Data necessary to give our triangle to OpenGL
 	GLuint VertexBufferID;
+	GLuint IndexBufferID;
 
 	void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods)
 	{
@@ -86,13 +87,10 @@ public:
 
 		static const GLfloat g_vertex_buffer_data[] =
 		{
-			-0.9f, -0.9f, 0.0f,
-			0.9f, -0.9f, 0.0f,
-			0.9f, 0.9f, 0.0f,
-
-			-0.9f, -0.9f, 0.0f,
-			0.9f, 0.9f, 0.0f,
-			-0.9f, 0.9f, 0.0f,
+			-0.9f, -0.9f,  1.0f,
+			 0.9f, -0.9f, -1.0f,
+			 0.9f,  0.9f,  1.0f,
+			-0.9f,  0.9f, -1.0f,
 		};
 		//actually memcopy the data - only do this once
 		glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_DYNAMIC_DRAW);
@@ -102,8 +100,18 @@ public:
 		//key function to get up how many elements to pull out at a time (3)
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*) 0);
 
-		glBindVertexArray(0);
+		// Create and bind IBO
+		glGenBuffers(1, &IndexBufferID);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IndexBufferID);
 
+		static const GLuint g_index_buffer_data[] =
+		{
+			0, 1, 2,
+			0, 2, 3
+		};
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(g_index_buffer_data), g_index_buffer_data, GL_DYNAMIC_DRAW);
+
+		glBindVertexArray(0);
 	}
 
 	//General OGL initialization - set OGL state here
@@ -173,7 +181,7 @@ public:
 		glBindVertexArray(VertexArrayID);
 
 		//actually draw from vertex 0, 3 vertices
-		glDrawArrays(GL_TRIANGLES, 0, 6);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 
 		glBindVertexArray(0);
 

@@ -10,5 +10,5 @@ uniform mat4 MV;
 
 void main()
 {
-	gl_Position = P * MV * vec4(vertPos + vec3(sin(uTime), cos(uTime), 0.0) * 0.1, 1.0);
+	gl_Position = P * MV * vec4(vertPos + vec3(sin(uTime), cos(uTime), 0.0) * 0.1 * vertPos.z, 1.0);
 }
