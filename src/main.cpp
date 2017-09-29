@@ -86,9 +86,13 @@ public:
 
 		static const GLfloat g_vertex_buffer_data[] =
 		{
-			-0.5f, -0.5f, 0.0f,
-			0.5f, -0.5f, 0.0f,
-			0.0f, 0.7f, 0.0f
+			-0.9f, -0.9f, 0.0f,
+			0.9f, -0.9f, 0.0f,
+			0.9f, 0.9f, 0.0f,
+
+			-0.9f, -0.9f, 0.0f,
+			0.9f, 0.9f, 0.0f,
+			-0.9f, 0.9f, 0.0f,
 		};
 		//actually memcopy the data - only do this once
 		glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_DYNAMIC_DRAW);
@@ -108,7 +112,7 @@ public:
 		GLSL::checkVersion();
 
 		// Set background color.
-		glClearColor(0.9f, 0.2f, 0.0f, 1.0f);
+		glClearColor(0.7f, 0.7f, 0.7f, 1.0f);
 		// Enable z-buffer test.
 		glEnable(GL_DEPTH_TEST);
 
@@ -164,7 +168,7 @@ public:
 		glBindVertexArray(VertexArrayID);
 
 		//actually draw from vertex 0, 3 vertices
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
 
 		glBindVertexArray(0);
 
