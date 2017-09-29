@@ -123,6 +123,7 @@ public:
 		prog->init();
 		prog->addUniform("P");
 		prog->addUniform("MV");
+		prog->addUniform("uWindowSize");
 		prog->addAttribute("vertPos");
 	}
 
@@ -164,6 +165,8 @@ public:
 		//send the matrices to the shaders
 		glUniformMatrix4fv(prog->getUniform("P"), 1, GL_FALSE, glm::value_ptr(P->topMatrix()));
 		glUniformMatrix4fv(prog->getUniform("MV"), 1, GL_FALSE, glm::value_ptr(MV->topMatrix()));
+
+		glUniform2f(prog->getUniform("uWindowSize"), (float) width, (float) height);
 
 		glBindVertexArray(VertexArrayID);
 
