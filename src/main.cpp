@@ -10,6 +10,9 @@ ZJ Wood CPE 471 Lab 3 base code - I. Dunn class re-write
 #include "MatrixStack.h"
 #include "WindowManager.h"
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
 // value_ptr for glm
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
