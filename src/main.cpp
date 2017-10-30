@@ -35,6 +35,8 @@ public:
 	GLuint VertexBufferID;
 	GLuint IndexBufferID;
 
+	GLuint TextureID;
+
 	void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods)
 	{
 		if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
@@ -117,6 +119,37 @@ public:
 		glBindVertexArray(0);
 	}
 
+	void initTexture(const std::string& resourceDirectory)
+	{
+		// Create texture
+		glGenTextures(1, &TextureID);
+		glBindTexture(GL_TEXTURE_2D, TextureID); 
+
+		// set the texture wrapping parameters
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+		// set texture filtering parameters
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+		std::string const path = resourceDirectory + "/Image.jpg";
+		int x, y, n;
+		unsigned char * data = stbi_load(path.c_str(), & x, & y, & n, 0);
+
+		if (data)
+		{
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, x, y, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+			glGenerateMipmap(GL_TEXTURE_2D);
+			stbi_image_free(data);
+		}
+		else
+		{
+			printf("Failed to load image from file '%s', reason: %s\n", path.c_str(), stbi_failure_reason());
+			return;
+		}
+	}
+
 	//General OGL initialization - set OGL state here
 	void init(const std::string& resourceDirectory)
 	{
@@ -136,6 +169,7 @@ public:
 		prog->addUniform("MV");
 		prog->addUniform("uWindowSize");
 		prog->addUniform("uTime");
+		prog->addUniform("uTexture");
 		prog->addAttribute("vertPos");
 	}
 
@@ -181,6 +215,11 @@ public:
 		glUniform2f(prog->getUniform("uWindowSize"), (float) width, (float) height);
 		glUniform1f(prog->getUniform("uTime"), (float) glfwGetTime());
 
+		// bind texture on texture unit
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, TextureID);
+		glUniform1i(prog->getUniform("uTexture"), 0);
+
 		glBindVertexArray(VertexArrayID);
 
 		//actually draw from vertex 0, 3 vertices
@@ -219,6 +258,7 @@ int main(int argc, char **argv)
 	// Initialize scene.
 	application->init(resourceDir);
 	application->initGeom();
+	application->initTexture(resourceDir);
 
 	// Loop until the user closes the window.
 	while(! glfwWindowShouldClose(windowManager->getHandle()))

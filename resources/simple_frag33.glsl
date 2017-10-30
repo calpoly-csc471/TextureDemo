@@ -1,6 +1,7 @@
 #version 330 core
 
 uniform vec2 uWindowSize;
+uniform sampler2D uTexture;
 
 out vec3 color;
 
@@ -14,4 +15,6 @@ void main()
 	{
 		color.g = 1.0;
 	}
+
+	color.rgb *= texture(uTexture, gl_FragCoord.xy / uWindowSize * vec2(1.0, -1.0)).rgb;
 }
