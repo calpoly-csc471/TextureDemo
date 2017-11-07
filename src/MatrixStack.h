@@ -25,7 +25,7 @@ public:
 	void pushMatrix();
 
 	// Removes the top of the stack and sets the current matrix to be the matrix that is now on top
-	 void popMatrix();
+	void popMatrix();
 
 	//  Sets the top matrix to be the identity
 	void loadIdentity();

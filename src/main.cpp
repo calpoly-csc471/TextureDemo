@@ -18,6 +18,68 @@ ZJ Wood CPE 471 Lab 3 base code - I. Dunn class re-write
 #include <glm/gtc/matrix_transform.hpp>
 
 
+template <typename T>
+T CubicInterpolate(T p[4], T x)
+{
+	return p[1] + (T) 0.5 * x*(p[2] - p[0] + x*(2 * p[0] - 5 * p[1] + 4 * p[2] - p[3] + x*(3 * (p[1] - p[2]) + p[3] - p[0])));
+}
+
+float Cubic(float in, float out, float t)
+{
+	float p[4];
+	p[0] = p[1] = in;
+	p[2] = p[3] = out;
+
+	return CubicInterpolate<float>(p, t);
+}
+
+float MoveLinear(float From, float const To, float const Elapsed, float const Speed, float const Clamp)
+{
+	if (From > To + Clamp)
+	{
+		From -= Speed * Elapsed;
+		if (From < To + Clamp)
+		{
+			From = To;
+		}
+	}
+	if (From < To - Clamp)
+	{
+		From += Speed * Elapsed;
+		if (From > To - Clamp)
+		{
+			From = To;
+		}
+	}
+
+	return From;
+}
+
+float MoveQuadratic(float From, float const To, float const Elapsed, float const Speed, float const Clamp)
+{
+	float const DistanceCanGo = Speed * Elapsed * std::abs(To - From);
+
+	if (From > To + Clamp)
+	{
+		From -= DistanceCanGo;
+		if (From < To + Clamp)
+		{
+			From = To;
+		}
+	}
+	if (From < To - Clamp)
+	{
+		From += DistanceCanGo;
+		if (From > To - Clamp)
+		{
+			From = To;
+		}
+	}
+
+	return From;
+}
+
+
 class Application : public EventCallbacks
 {
 
@@ -37,11 +99,31 @@ public:
 
 	GLuint TextureID;
 
+	float Position = 0.1f;
+	float Goal = 0.1f;
+
 	void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods)
 	{
-		if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+		if (action == GLFW_RELEASE)
 		{
-			glfwSetWindowShouldClose(window, GL_TRUE);
+			switch (key)
+			{
+			case GLFW_KEY_ESCAPE:
+				glfwSetWindowShouldClose(window, GL_TRUE);
+				break;
+
+			case GLFW_KEY_Z:
+				Goal = 0.1f;
+				break;
+
+			case GLFW_KEY_X:
+				Goal = 1.f;
+				break;
+
+			case GLFW_KEY_C:
+				Goal = 5.f;
+				break;
+			}
 		}
 	}
 
@@ -56,16 +138,6 @@ public:
 			glfwGetCursorPos(window, &posX, &posY);
 			std::cout << "Pos X " << posX <<  " Pos Y " << posY << std::endl;
 
-			//change this to be the points converted to WORLD
-			//THIS IS BROKEN< YOU GET TO FIX IT - yay!
-			newPt[0] = 0;
-			newPt[1] = 0;
-
-			std::cout << "converted:" << newPt[0] << " " << newPt[1] << std::endl;
-			glBindBuffer(GL_ARRAY_BUFFER, VertexBufferID);
-			//update the vertex array with the updated points
-			glBufferSubData(GL_ARRAY_BUFFER, sizeof(float)*6, sizeof(float)*2, newPt);
-			glBindBuffer(GL_ARRAY_BUFFER, 0);
 		}
 	}
 
@@ -92,10 +164,10 @@ public:
 
 		static const GLfloat g_vertex_buffer_data[] =
 		{
-			-0.9f, -0.9f,  1.0f,
-			 0.9f, -0.9f, -1.0f,
-			 0.9f,  0.9f,  1.0f,
-			-0.9f,  0.9f, -1.0f,
+			-1.0f, -1.0f,  0.0f,
+			 1.0f, -1.0f,  0.0f,
+			 1.0f,  1.0f,  0.0f,
+			-1.0f,  1.0f,  0.0f,
 		};
 		//actually memcopy the data - only do this once
 		glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_DYNAMIC_DRAW);
@@ -173,6 +245,8 @@ public:
 		prog->addAttribute("vertPos");
 	}
 
+	float lastTime = 0;
+
 
 	/****DRAW
 	This is the most important function in your program - this is where you
@@ -190,20 +264,22 @@ public:
 		// Clear framebuffer.
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+
+		float thisTime = (float) glfwGetTime();
+		float elapsed = thisTime - lastTime;
+
+		Position = MoveQuadratic(Position, Goal, elapsed, 5.f, 0.001f);
+
+		lastTime = thisTime;
+
 		// Create the matrix stacks - please leave these alone for now
 		auto P = std::make_shared<MatrixStack>();
 		auto MV = std::make_shared<MatrixStack>();
 		// Apply orthographic projection.
 		P->pushMatrix();
-		if (width > height)
-		{
-			P->ortho(-1*aspect, 1*aspect, -1, 1, -2, 100.0f);
-		}
-		else
-		{
-			P->ortho(-1, 1, -1*1/aspect, 1*1/aspect, -2, 100.0f);
-		}
+		P->perspective(40.f, aspect, 0.1f, 100.f);
 		MV->pushMatrix();
+		MV->translate(glm::vec3(0, 0, -Position));
 
 		// Draw the triangle using GLSL.
 		prog->bind();
@@ -213,7 +289,6 @@ public:
 		glUniformMatrix4fv(prog->getUniform("MV"), 1, GL_FALSE, glm::value_ptr(MV->topMatrix()));
 
 		glUniform2f(prog->getUniform("uWindowSize"), (float) width, (float) height);
-		glUniform1f(prog->getUniform("uTime"), (float) glfwGetTime());
 
 		// bind texture on texture unit
 		glActiveTexture(GL_TEXTURE0);
