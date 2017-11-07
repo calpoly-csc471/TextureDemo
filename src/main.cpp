@@ -101,6 +101,7 @@ public:
 
 	float Position = 0.1f;
 	float Goal = 0.1f;
+	float TexCoordMult = 1.f;
 
 	void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods)
 	{
@@ -117,11 +118,68 @@ public:
 				break;
 
 			case GLFW_KEY_X:
-				Goal = 1.f;
+				Goal = 0.55f;
 				break;
 
 			case GLFW_KEY_C:
+				Goal = 1.f;
+				break;
+
+			case GLFW_KEY_V:
 				Goal = 5.f;
+				break;
+
+			case GLFW_KEY_B:
+				Goal = 10.f;
+				break;
+
+			case GLFW_KEY_1:
+				TexCoordMult = 0.5f;
+				break;
+
+			case GLFW_KEY_2:
+				TexCoordMult = 1.f;
+				break;
+
+			case GLFW_KEY_3:
+				TexCoordMult = 4.f;
+				break;
+
+			case GLFW_KEY_4:
+				TexCoordMult = 16.f;
+				break;
+
+			case GLFW_KEY_5:
+				TexCoordMult = 64.f;
+				break;
+
+			case GLFW_KEY_6:
+				TexCoordMult = 256.f;
+				break;
+
+			case GLFW_KEY_T:
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+				std::cout << "Minification: Nearest." << std::endl;
+				break;
+
+			case GLFW_KEY_Y:
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+				std::cout << "Minification: Linear." << std::endl;
+				break;
+
+			case GLFW_KEY_U:
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+				std::cout << "Minification: Linear + MipMap." << std::endl;
+				break;
+
+			case GLFW_KEY_G:
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+				std::cout << "Minification: Nearest." << std::endl;
+				break;
+
+			case GLFW_KEY_H:
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+				std::cout << "Minification: Linear." << std::endl;
 				break;
 			}
 		}
@@ -132,7 +190,6 @@ public:
 	void mouseCallback(GLFWwindow *window, int button, int action, int mods)
 	{
 		double posX, posY;
-		float newPt[2];
 		if (action == GLFW_PRESS)
 		{
 			glfwGetCursorPos(window, &posX, &posY);
@@ -205,7 +262,7 @@ public:
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-		std::string const path = resourceDirectory + "/Image.jpg";
+		std::string const path = resourceDirectory + "/Texture.png";
 		int x, y, n;
 		unsigned char * data = stbi_load(path.c_str(), & x, & y, & n, 0);
 
@@ -242,6 +299,7 @@ public:
 		prog->addUniform("uWindowSize");
 		prog->addUniform("uTime");
 		prog->addUniform("uTexture");
+		prog->addUniform("uTexCoordMult");
 		prog->addAttribute("vertPos");
 	}
 
@@ -289,6 +347,7 @@ public:
 		glUniformMatrix4fv(prog->getUniform("MV"), 1, GL_FALSE, glm::value_ptr(MV->topMatrix()));
 
 		glUniform2f(prog->getUniform("uWindowSize"), (float) width, (float) height);
+		glUniform1f(prog->getUniform("uTexCoordMult"), TexCoordMult);
 
 		// bind texture on texture unit
 		glActiveTexture(GL_TEXTURE0);
