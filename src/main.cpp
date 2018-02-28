@@ -174,12 +174,12 @@ public:
 
 			case GLFW_KEY_G:
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-				std::cout << "Minification: Nearest." << std::endl;
+				std::cout << "Magnification: Nearest." << std::endl;
 				break;
 
 			case GLFW_KEY_H:
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-				std::cout << "Minification: Linear." << std::endl;
+				std::cout << "Magnification: Linear." << std::endl;
 				break;
 			}
 		}
@@ -252,7 +252,7 @@ public:
 	{
 		// Create texture
 		glGenTextures(1, &TextureID);
-		glBindTexture(GL_TEXTURE_2D, TextureID); 
+		glBindTexture(GL_TEXTURE_2D, TextureID);
 
 		// set the texture wrapping parameters
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
