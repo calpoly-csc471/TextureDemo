@@ -86,6 +86,7 @@ class Application : public EventCallbacks
 public:
 
 	WindowManager * windowManager = nullptr;
+	std::string resourceDirectory;
 
 	// Our shader program
 	std::shared_ptr<Program> prog;
@@ -180,6 +181,14 @@ public:
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 				std::cout << "Magnification: Linear." << std::endl;
 				break;
+
+			case GLFW_KEY_Q:
+				loadImage("Texture.png");
+				break;
+
+			case GLFW_KEY_W:
+				loadImage("Image.jpg");
+				break;
 			}
 		}
 	}
@@ -265,7 +274,7 @@ public:
 		glBindVertexArray(0);
 	}
 
-	void initTexture(const std::string& resourceDirectory)
+	void initTexture()
 	{
 		// Create texture
 		glGenTextures(1, &TextureID);
@@ -279,7 +288,12 @@ public:
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-		std::string const path = resourceDirectory + "/Texture.png";
+		loadImage("Texture.png");
+	}
+
+	void loadImage(const std::string & fileName)
+	{
+		std::string const path = resourceDirectory + "/" + fileName;
 		int x, y, n;
 		unsigned char * data = stbi_load(path.c_str(), & x, & y, & n, 0);
 
@@ -299,6 +313,8 @@ public:
 	//General OGL initialization - set OGL state here
 	void init(const std::string& resourceDirectory)
 	{
+		this->resourceDirectory = resourceDirectory;
+
 		GLSL::checkVersion();
 
 		// Set background color.
@@ -407,7 +423,7 @@ int main(int argc, char **argv)
 	// Initialize scene.
 	application->init(resourceDir);
 	application->initGeom();
-	application->initTexture(resourceDir);
+	application->initTexture();
 
 	// Loop until the user closes the window.
 	while(! glfwWindowShouldClose(windowManager->getHandle()))
