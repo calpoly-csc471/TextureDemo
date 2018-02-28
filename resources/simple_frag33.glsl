@@ -10,5 +10,5 @@ out vec3 color;
 
 void main()
 {
-	color = texture(uTexture, fTexCoords * vec2(1.0, -1.0) * uTexCoordMult).rgb;
+	color = texture(uTexture, fTexCoords * uTexCoordMult).rgb;
 }
