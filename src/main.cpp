@@ -94,13 +94,12 @@ public:
 	GLuint VertexArrayID;
 
 	// Data necessary to give our triangle to OpenGL
-	GLuint VertexBufferID;
 	GLuint IndexBufferID;
 
 	GLuint TextureID;
 
-	float Position = 0.1f;
-	float Goal = 0.1f;
+	float Position = 0.55f;
+	float Goal = 0.55f;
 	float TexCoordMult = 1.f;
 
 	void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods)
@@ -210,6 +209,9 @@ public:
 	/*Note that any gl calls must always happen after a GL state is initialized */
 	void initGeom()
 	{
+		GLuint VertexBufferID;
+		GLuint TexCoordBufferID;
+
 		//generate the VAO
 		glGenVertexArrays(1, &VertexArrayID);
 		glBindVertexArray(VertexArrayID);
@@ -226,6 +228,13 @@ public:
 			 1.0f,  1.0f,  0.0f,
 			-1.0f,  1.0f,  0.0f,
 		};
+		static const GLfloat g_texcoord_buffer_data[] =
+		{
+			0.0f, 0.0f,
+			1.0f, 0.0f,
+			1.0f, 1.0f,
+			0.0f, 1.0f,
+		};
 		//actually memcopy the data - only do this once
 		glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_DYNAMIC_DRAW);
 
@@ -233,6 +242,14 @@ public:
 		glEnableVertexAttribArray(0);
 		//key function to get up how many elements to pull out at a time (3)
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*) 0);
+
+		glGenBuffers(1, &TexCoordBufferID);
+		glBindBuffer(GL_ARRAY_BUFFER, TexCoordBufferID);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(g_texcoord_buffer_data), g_texcoord_buffer_data, GL_DYNAMIC_DRAW);
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (void*) 0);
+
+
 
 		// Create and bind IBO
 		glGenBuffers(1, &IndexBufferID);
@@ -260,7 +277,7 @@ public:
 
 		// set texture filtering parameters
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 		std::string const path = resourceDirectory + "/Texture.png";
 		int x, y, n;
@@ -296,11 +313,10 @@ public:
 		prog->init();
 		prog->addUniform("P");
 		prog->addUniform("MV");
-		prog->addUniform("uWindowSize");
-		prog->addUniform("uTime");
 		prog->addUniform("uTexture");
 		prog->addUniform("uTexCoordMult");
 		prog->addAttribute("vertPos");
+		prog->addAttribute("vertTex");
 	}
 
 	float lastTime = 0;
@@ -346,7 +362,6 @@ public:
 		glUniformMatrix4fv(prog->getUniform("P"), 1, GL_FALSE, glm::value_ptr(P->topMatrix()));
 		glUniformMatrix4fv(prog->getUniform("MV"), 1, GL_FALSE, glm::value_ptr(MV->topMatrix()));
 
-		glUniform2f(prog->getUniform("uWindowSize"), (float) width, (float) height);
 		glUniform1f(prog->getUniform("uTexCoordMult"), TexCoordMult);
 
 		// bind texture on texture unit
